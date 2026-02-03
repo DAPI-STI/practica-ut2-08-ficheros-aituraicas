@@ -42,6 +42,19 @@ def _load_phonebook(path: str | Path) -> dict[str, str]:
     - Usa `with open(..., encoding="utf-8") as f:`
     - Recorre línea a línea con `for line in f:`
     """
+    phonebook = {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                parts = line.split(",", 1)
+                if len(parts) != 2:
+                    raise ValueError(f"Línea mal formada: '{line}'")
+                name, phone = parts[0].strip(), parts[1].strip()
+                phonebook[name] = phone
+        return phonebook
     raise NotImplementedError("Implementa _load_phonebook(path)")
 
 
@@ -54,6 +67,9 @@ def _save_phonebook(path: str | Path, phonebook: dict[str, str]) -> None:
     - Puedes guardar en cualquier orden.
     - Usa encoding="utf-8".
     """
+    with open(path, "w", encoding="utf-8") as f:
+        for name, phone in phonebook.items():
+            f.write(f"{name},{phone}\n")
     raise NotImplementedError("Implementa _save_phonebook(path, phonebook)")
 
 
@@ -69,6 +85,10 @@ def add_contact(path: str | Path, name: str, phone: str) -> None:
     Pista:
     - load -> modificar dict -> save
     """
+    if not name or not name.strip():
+        raise ValueError("El nombre no puede estar vacío.")
+    if not phone or not phone.strip():
+        raise ValueError("El teléfono no puede estar vacío.")
     raise NotImplementedError("Implementa add_contact(path, name, phone)")
 
 
@@ -80,6 +100,8 @@ def get_phone(path: str | Path, name: str) -> str | None:
     - Si el fichero no existe, devuelve None (porque no hay contactos).
     - `name` se compara tras strip().
     """
+    phonebook = _load_phonebook(path)
+    return phonebook.get(name.strip())
     raise NotImplementedError("Implementa get_phone(path, name)")
 
 
@@ -98,4 +120,11 @@ def remove_contact(path: str | Path, name: str) -> bool:
     Pista:
     - load -> borrar si existe -> save si cambió
     """
+    phonebook = _load_phonebook(path)
+    name = name.strip()
+    if name in phonebook:
+        del phonebook[name]
+        _save_phonebook(path, phonebook)
+        return True
+    return False
     raise NotImplementedError("Implementa remove_contact(path, name)")

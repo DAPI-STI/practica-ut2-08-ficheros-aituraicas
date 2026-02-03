@@ -33,4 +33,20 @@ def csv_average(path: str | Path, column: str) -> float:
 
     csv_average(..., "average") -> 8.0
     """
-    raise NotImplementedError("Implementa csv_average(path, column)")
+    import csv
+    with open(path, "r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        if column not in reader.fieldnames:
+            raise ValueError(f"La columna '{column}' no existe en el CSV.")
+        total = 0.0
+        count = 0
+        for row in reader:
+            try:
+                value = float(row[column])
+            except ValueError:
+                raise ValueError(f"El valor '{row[column]}' no se puede convertir a float.")
+            total += value
+            count += 1
+        if count == 0:
+            raise ValueError("El CSV no contiene filas de datos.")
+    return total / count
